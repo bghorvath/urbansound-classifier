@@ -3,6 +3,7 @@ from torch import nn
 from torch.utils.data import DataLoader
 from torchvision.datasets import MNIST
 from torchvision.transforms import ToTensor
+import yaml
 
 class FeedForward(nn.Module):
     def __init__(self):
@@ -22,19 +23,16 @@ class FeedForward(nn.Module):
         return out
 
 def train():
-    BATCH_SIZE = 32
-    EPOCHS = 10
-    LR = .001
-    
-    train_data = MNIST(root="data", train=True, download=True, transform=ToTensor())
+    params = yaml.safe_load(open("params.yaml"))
 
-    dataloader = DataLoader(train_data, batch_size=BATCH_SIZE, shuffle=True)
+    train_data = MNIST(root="data", train=True, download=True, transform=ToTensor())
+    dataloader = DataLoader(train_data, batch_size=params["train"]["batch_size"], shuffle=params["train"]["shuffle"])
     device = "cuda" if torch.cuda.is_available() else "cpu"
     model = FeedForward().to(device)
-    optimizer = torch.optim.Adam(model.parameters(), lr=LR)
+    optimizer = torch.optim.Adam(model.parameters(), lr=params["train"]["lr"])
     loss_fn = nn.CrossEntropyLoss()
 
-    for epoch in range(EPOCHS):
+    for epoch in range(params["train"]["epochs"]):
         for batch in dataloader:
             x, y = batch
             x, y = x.to(device), y.to(device)

@@ -1,0 +1,9 @@
+stages:
+  train:
+    cmd: python torchaudio_demo/main.py
+    params:
+      - transform
+      - train
+    deps:
+      - data/UrbanSound8K.dvc
+      - torchaudio_demo/dataset.py
