@@ -1,0 +1,24 @@
+[tool.poetry]
+name = "torchaudio-demo"
+version = "0.1.0"
+description = ""
+authors = ["Balazs G. Horvath <bghorvath@pm.me>"]
+packages = [{include = "torchaudio_demo"}]
+
+[tool.poetry.dependencies]
+python = "3.11.3"
+numpy = "^1.24.3"
+pandas = "^2.0.1"
+ipykernel = "^6.23.0"
+torch = { version = ">=2.0.1+cpu", source = "torchcpu" }
+torchvision = { version = ">=0.15.2+cpu", source = "torchcpu" }
+torchaudio = { version = ">=2.0.2+cpu", source = "torchcpu" }
+
+[[tool.poetry.source]]
+name = "torchcpu"
+url = "https://download.pytorch.org/whl/cpu"
+priority = "explicit"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
