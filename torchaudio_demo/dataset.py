@@ -3,7 +3,6 @@ import pandas as pd
 import torch
 from torch.utils.data import Dataset
 import torchaudio
-from torchaudio.transforms import MelSpectrogram, MFCC, Spectrogram
 
 class AudioDataset(Dataset):
     def __init__(self, transform, device) -> None:
@@ -51,21 +50,5 @@ class AudioDataset(Dataset):
         path = f"data/UrbanSound8K/{fold}/{self.annotations.iloc[index, 0]}"
         return path
     
-    def _get_label(self, index: int) -> int:
+    def _get_label(self, index: int):
         return self.annotations.iloc[index, 6]
-
-if __name__ == '__main__':
-    params = yaml.safe_load(open("params.yaml"))
-
-    transform = {
-        "mel_spectrogram": MelSpectrogram,
-        "mfcc": MFCC,
-        "spectrogram": Spectrogram,
-    }[params["transform"]["type"]]
-
-    transform_params = {k:v for k, v in params["transform"]["params"].items() if k in transform.__init__.__code__.co_varnames}
-    
-    transform = transform(**transform_params)
-
-    dataset = AudioDataset(transform)
-    print(dataset[0])
