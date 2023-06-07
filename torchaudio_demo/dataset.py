@@ -6,9 +6,10 @@ import torchaudio
 from torchaudio.transforms import MelSpectrogram, MFCC, Spectrogram
 
 class AudioDataset(Dataset):
-    def __init__(self, transform) -> None:
+    def __init__(self, transform, device) -> None:
+        self.device = device
         self.annotations = pd.read_csv("data/UrbanSound8K/UrbanSound8K.csv")
-        self.transform = transform
+        self.transform = transform.to(self.device)
         params = yaml.safe_load(open("params.yaml"))
         self.target_sr = params["transform"]["params"]["sample_rate"]
         self.duration = params["transform"]["params"]["duration"]
@@ -19,7 +20,7 @@ class AudioDataset(Dataset):
     def __getitem__(self, index: int):
         audio_path = self._get_audio_path(index)
         label = self._get_label(index)
-        signal, sr = torchaudio.load(audio_path)
+        signal, sr = torchaudio.load(audio_path).to(self.device)
         signal = self._resample(signal, sr)
         signal = self._mix_down(signal)
         signal = self._cut(signal)
