@@ -2,10 +2,10 @@ import yaml
 import torch
 from torch import nn
 from torch.utils.data import DataLoader
-from torchaudio.transforms import MelSpectrogram, MFCC, Spectrogram
 
-from urbansound_classifier.dataset import AudioDataset
-from urbansound_classifier.model import CNN
+from torchaudio.transforms import MelSpectrogram, MFCC, Spectrogram
+from torchaudio_demo.dataset import AudioDataset
+from torchaudio_demo.model import CNN
 
 def train():
     params = yaml.safe_load(open("params.yaml"))

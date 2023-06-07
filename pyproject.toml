@@ -1,9 +1,9 @@
 [tool.poetry]
-name = "torchaudio-demo"
+name = "urbansound-classifier"
 version = "0.1.0"
 description = ""
 authors = ["Balazs G. Horvath <bghorvath@pm.me>"]
-packages = [{include = "torchaudio_demo"}]
+packages = [{include = "urbansound_classifier"}]
 
 [tool.poetry.dependencies]
 python = "3.11.3"

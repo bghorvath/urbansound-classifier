@@ -5,5 +5,5 @@ stages:
       - transform
       - train
     deps:
-      - data/UrbanSound8K.dvc
+      - data/UrbanSound8K
       - torchaudio_demo/dataset.py
