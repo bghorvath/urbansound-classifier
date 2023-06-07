@@ -1,6 +1,6 @@
 stages:
   train:
-    cmd: python torchaudio_demo/main.py
+    cmd: python torchaudio_demo/train.py
     params:
       - transform
       - train
