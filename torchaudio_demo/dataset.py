@@ -9,7 +9,9 @@ class AudioDataset(Dataset):
     def __init__(self, transform) -> None:
         self.annotations = pd.read_csv("data/UrbanSound8K/UrbanSound8K.csv")
         self.transform = transform
-        self.target_sr = yaml.safe_load(open("params.yaml"))["transform"]["params"]["sample_rate"]
+        params = yaml.safe_load(open("params.yaml"))
+        self.target_sr = params["transform"]["params"]["sample_rate"]
+        self.duration = params["transform"]["params"]["duration"]
 
     def __len__(self) -> int:
         return len(self.annotations)
@@ -20,8 +22,17 @@ class AudioDataset(Dataset):
         signal, sr = torchaudio.load(audio_path)
         signal = self._resample(signal, sr)
         signal = self._mix_down(signal)
+        signal = self._cut(signal)
         signal = self.transform(signal)
         return signal, label
+    
+    def _cut(self, signal):
+        length = self.target_sr * self.duration
+        if signal.shape[1] > length:
+            signal = signal[:, :length]
+        else:
+            signal = torch.nn.functional.pad(signal, (0, length - signal.shape[1]))
+        return signal
 
     def _resample(self, signal, sr):
         if sr != self.target_sr:

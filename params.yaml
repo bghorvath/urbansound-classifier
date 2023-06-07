@@ -3,6 +3,7 @@ transform:
   params:
   # audio params
     sample_rate: 16000
+    duration: 1
   # spectrogram params
     n_fft: 2048
     hop_length: 512
