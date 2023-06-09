@@ -13,6 +13,7 @@ ipykernel = "^6.23.0"
 torch = { version = ">=2.0.1+cpu", source = "torchcpu" }
 torchvision = { version = ">=0.15.2+cpu", source = "torchcpu" }
 torchaudio = { version = ">=2.0.2+cpu", source = "torchcpu" }
+torchinfo = "^1.8.0"
 dvc = "^2.58.2"
 dvc-gs = "^2.22.1"
 

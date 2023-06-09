@@ -1,4 +1,5 @@
 from torch import nn
+from torchinfo import summary
 
 class FeedForward(nn.Module):
     def __init__(self):
@@ -17,35 +18,35 @@ class FeedForward(nn.Module):
         out = self.softmax(logits)
         return out
 
-class CNN(nn.Module):
+class CNN(nn.Module): 
     def __init__(self) -> None:
         super().__init__()
-        # 4 conv blocks / flatten / linear / softmax
         self.conv_layers = nn.Sequential(
-            nn.Conv2d(1, 32, kernel_size=(3, 3), stride=(1, 1)),
+            nn.Conv2d(1, 16, kernel_size=3, stride=1, padding=2),
             nn.ReLU(),
-            nn.MaxPool2d(kernel_size=(3, 3), stride=(2, 2)),
-            nn.Conv2d(32, 64, kernel_size=(3, 3), stride=(1, 1)),
+            nn.MaxPool2d(kernel_size=2),
+            nn.Conv2d(16, 32, kernel_size=3, stride=1, padding=2),
             nn.ReLU(),
-            nn.MaxPool2d(kernel_size=(3, 3), stride=(2, 2)),
-            nn.Conv2d(64, 128, kernel_size=(3, 3), stride=(1, 1)),
+            nn.MaxPool2d(kernel_size=2),
+            nn.Conv2d(32, 64, kernel_size=3, stride=1, padding=2),
             nn.ReLU(),
-            nn.MaxPool2d(kernel_size=(3, 3), stride=(2, 2)),
-            nn.Conv2d(128, 256, kernel_size=(3, 3), stride=(1, 1)),
+            nn.MaxPool2d(kernel_size=2),
+            nn.Conv2d(64, 128, kernel_size=3, stride=1, padding=2), # padding
             nn.ReLU(),
-            nn.MaxPool2d(kernel_size=(3, 3), stride=(2, 2))
+            nn.MaxPool2d(kernel_size=2) # stride
         )
         self.flatten = nn.Flatten()
-        self.linear_layers = nn.Sequential(
-            nn.Linear(256, 128),
-            nn.ReLU(),
-            nn.Linear(128, 10)
-        )
+        self.linear = nn.Linear(128*5*4, 10)
         self.softmax = nn.Softmax(dim=1)
 
     def forward(self, x):
         x = self.conv_layers(x)
         x = self.flatten(x)
-        x = self.linear_layers(x)
-        out = self.softmax(x)
+        logits = self.linear(x)
+        out = self.softmax(logits)
         return out
+    
+
+if __name__ == "__main__":
+    model = CNN()
+    summary(model, input_size=(1, 1, 64, 44))
