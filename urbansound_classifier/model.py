@@ -1,5 +1,4 @@
 from torch import nn
-from torchinfo import summary
 
 class FeedForward(nn.Module):
     def __init__(self):
@@ -45,8 +44,3 @@ class CNN(nn.Module):
         logits = self.linear(x)
         out = self.softmax(logits)
         return out
-    
-
-if __name__ == "__main__":
-    model = CNN()
-    summary(model, input_size=(1, 1, 64, 44))

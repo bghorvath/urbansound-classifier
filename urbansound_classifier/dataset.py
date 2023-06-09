@@ -1,3 +1,4 @@
+import os
 import yaml
 import pandas as pd
 import torch
@@ -7,9 +8,10 @@ import torchaudio
 class AudioDataset(Dataset):
     def __init__(self, transform, device) -> None:
         self.device = device
-        self.annotations = pd.read_csv("data/UrbanSound8K/UrbanSound8K.csv")
-        self.transform = transform.to(self.device)
+        self.transform = transform
         params = yaml.safe_load(open("params.yaml"))
+        self.annotations = pd.read_csv(params["data"]["annotations"])
+        self.audio_dir = params["data"]["audio_dir"]
         self.target_sr = params["transform"]["params"]["sample_rate"]
         self.duration = params["transform"]["params"]["duration"]
 
@@ -19,7 +21,8 @@ class AudioDataset(Dataset):
     def __getitem__(self, index: int):
         audio_path = self._get_audio_path(index)
         label = self._get_label(index)
-        signal, sr = torchaudio.load(audio_path).to(self.device)
+        signal, sr = torchaudio.load(audio_path)
+        signal = signal.to(self.device)
         signal = self._resample(signal, sr)
         signal = self._mix_down(signal)
         signal = self._cut(signal)
@@ -47,7 +50,7 @@ class AudioDataset(Dataset):
     
     def _get_audio_path(self, index: int) -> str:
         fold = f"fold{self.annotations.iloc[index, 5]}"
-        path = f"data/UrbanSound8K/{fold}/{self.annotations.iloc[index, 0]}"
+        path = os.path.join(self.audio_dir, fold, str(self.annotations.iloc[index, 0]))
         return path
     
     def _get_label(self, index: int):
