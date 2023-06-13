@@ -10,7 +10,7 @@ class AudioDataset(Dataset):
         self.device = device
         self.transform = transform
         params = yaml.safe_load(open("params.yaml"))
-        self.annotations = pd.read_csv(params["data"]["annotations"])
+        self.annotations = pd.read_csv(params["data"]["annotations"])[:100]
         self.audio_dir = params["data"]["audio_dir"]
         self.target_sr = params["transform"]["params"]["sample_rate"]
         self.duration = params["transform"]["params"]["duration"]
