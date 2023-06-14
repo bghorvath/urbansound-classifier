@@ -1,7 +1,9 @@
+import torch
 from torch import nn
+import lightning.pytorch as pl
 
-class FeedForward(nn.Module):
-    def __init__(self):
+class LitFF(pl.LightningModule):
+    def __init__(self, lr=1e-3, weight_decay=0.0):
         super().__init__()
         self.flatten = nn.Flatten()
         self.dense_layers = nn.Sequential(
@@ -10,6 +12,9 @@ class FeedForward(nn.Module):
             nn.Linear(256, 10)
         )
         self.softmax = nn.Softmax(dim=1)
+        self.lr = lr
+        self.weight_decay = weight_decay
+        self.loss = nn.CrossEntropyLoss()
 
     def forward(self, x):
         x = self.flatten(x)
@@ -17,8 +22,26 @@ class FeedForward(nn.Module):
         out = self.softmax(logits)
         return out
 
-class CNN(nn.Module): 
-    def __init__(self) -> None:
+    def training_step(self, batch, batch_idx):
+        x, y = batch
+        logits = self(x)
+        loss = self.loss(logits, y)
+        self.log("train_loss", loss, prog_bar=True)
+        return loss
+
+    def validation_step(self, batch, batch_idx):
+        x, y = batch
+        logits = self(x)
+        loss = self.loss(logits, y)
+        self.log("val_loss", loss, prog_bar=True)
+        return loss
+
+    def configure_optimizers(self):
+        optimizer = torch.optim.Adam(self.parameters(), lr=self.lr, weight_decay=self.weight_decay)
+        return optimizer
+
+class LitCNN(pl.LightningModule):
+    def __init__(self, lr=1e-3, weight_decay=0.0):
         super().__init__()
         self.conv_layers = nn.Sequential(
             nn.Conv2d(1, 16, kernel_size=3, stride=1, padding=2),
@@ -37,6 +60,9 @@ class CNN(nn.Module):
         self.flatten = nn.Flatten()
         self.linear = nn.Linear(128*5*4, 10)
         self.softmax = nn.Softmax(dim=1)
+        self.loss = nn.CrossEntropyLoss()
+        self.lr = lr
+        self.weight_decay = weight_decay
 
     def forward(self, x):
         x = self.conv_layers(x)
@@ -44,3 +70,21 @@ class CNN(nn.Module):
         logits = self.linear(x)
         out = self.softmax(logits)
         return out
+
+    def configure_optimizers(self):
+        optimizer = torch.optim.Adam(self.parameters(), lr=self.lr, weight_decay=self.weight_decay)
+        return optimizer
+
+    def training_step(self, batch, batch_idx):
+        x, y = batch
+        logits = self(x)
+        loss = self.loss(logits, y)
+        self.log("train_loss", loss, on_step=True, on_epoch=True, prog_bar=True, logger=True)
+        return loss
+
+    def validation_step(self, batch, batch_idx):
+        x, y = batch
+        logits = self(x)
+        loss = self.loss(logits, y)
+        self.log("val_loss", loss, on_step=True, on_epoch=True, prog_bar=True, logger=True)
+        return loss

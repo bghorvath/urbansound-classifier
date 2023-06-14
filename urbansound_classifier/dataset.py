@@ -6,14 +6,21 @@ from torch.utils.data import Dataset
 import torchaudio
 
 class AudioDataset(Dataset):
-    def __init__(self, transform, device) -> None:
+    def __init__(self, transform, val: bool = False, device: str = "cpu") -> None:
         self.device = device
         self.transform = transform
+        self.val = val
         params = yaml.safe_load(open("params.yaml"))
-        self.annotations = pd.read_csv(params["data"]["annotations"])[:100]
         self.audio_dir = params["data"]["audio_dir"]
         self.target_sr = params["transform"]["params"]["sample_rate"]
         self.duration = params["transform"]["params"]["duration"]
+        self.annotations = pd.read_csv(params["data"]["annotations"])
+        if self.val:
+            self.annotations = self.annotations[self.annotations["fold"] == 10]
+        else:
+            self.annotations = self.annotations[self.annotations["fold"] != 10]
+        self.annotations = self.annotations.sample(n = 500).reset_index(drop=True)
+
 
     def __len__(self) -> int:
         return len(self.annotations)

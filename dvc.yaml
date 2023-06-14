@@ -1,9 +1,10 @@
 stages:
   train:
-    cmd: python torchaudio_demo/train.py
+    cmd: python urbansound_classifier/train.py
     params:
       - transform
       - train
     deps:
       - data/UrbanSound8K
-      - torchaudio_demo/dataset.py
+      - urbansound_classifier/model.py
+      - urbansound_classifier/dataset.py

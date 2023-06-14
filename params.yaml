@@ -18,6 +18,6 @@ transform:
 
 train:
   epochs: 10
-  batch_size: 128
+  batch_size: 32
   shuffle: True
   lr: 0.001

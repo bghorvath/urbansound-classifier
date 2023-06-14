@@ -1,12 +1,14 @@
 import yaml
 import torch
-from torch import nn
 from torch.utils.data import DataLoader
-from torchinfo import summary
-
 from torchaudio.transforms import MelSpectrogram, MFCC, Spectrogram
+from lightning import Trainer
+from lightning.pytorch.callbacks import ModelCheckpoint
+from dvclive import Live
+from dvclive.lightning import DVCLiveLogger
+
 from urbansound_classifier.dataset import AudioDataset
-from urbansound_classifier.model import CNN
+from urbansound_classifier.model import LitCNN
 
 def train():
     params = yaml.safe_load(open("params.yaml"))
@@ -22,27 +24,34 @@ def train():
     
     transform = transform(**transform_params).to(device)
 
-    dataset = AudioDataset(transform, device=device)
+    train_dataset = AudioDataset(transform, val=False, device=device)
+    val_dataset = AudioDataset(transform, val=True, device=device)
 
-    dataloader = DataLoader(dataset, batch_size=params["train"]["batch_size"], shuffle=params["train"]["shuffle"])
-    model = CNN().to(device)
-    summary(model, input_size=(1, 1, 64, 44))
-    optimizer = torch.optim.Adam(model.parameters(), lr=params["train"]["lr"])
-    loss_fn = nn.CrossEntropyLoss()
-    
-    loss = torch.tensor(0.0)
-    for epoch in range(params["train"]["epochs"]):
-        for (x, y) in dataloader:
-            x, y = x.to(device), y.to(device)
-            x_hat = model(x)
-            loss = loss_fn(x_hat, y)
-            loss.backward()
-            optimizer.step()
-            optimizer.zero_grad()
-        print(f"Epoch: {epoch}, Loss: {loss.item()}")
-    print("Done!")
+    train_dataloader = DataLoader(train_dataset, batch_size=params["train"]["batch_size"], shuffle=params["train"]["shuffle"])
+    val_dataloader = DataLoader(val_dataset, batch_size=params["train"]["batch_size"], shuffle=False)
 
-    torch.save(model.state_dict(), "model.pth")
+    with Live(save_dvc_exp=True) as live:
+        checkpoint_callback = ModelCheckpoint(
+            dirpath="model",
+            filename="best",
+            save_top_k=1,
+            verbose=True,
+            monitor="val_loss",
+            mode="min"
+        )
+        model = LitCNN()
+        trainer = Trainer(
+            logger=DVCLiveLogger(),
+            max_epochs=params["train"]["epochs"],
+            callbacks=[checkpoint_callback],
+            log_every_n_steps=1,
+        )
+        trainer.fit(model, train_dataloader, val_dataloader)
+        live.log_artifact(
+            checkpoint_callback.best_model_path,
+            type="model",
+            name="best",
+        )
 
 if __name__ == '__main__':
     train()
